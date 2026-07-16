@@ -1,5 +1,4 @@
 import pytest
-import requests
 
 from src.main.api.models.account_transfer_request import TransferBetweenAccountsRequest
 from src.main.api.models.create_user_request import CreateUserRequest
