@@ -20,6 +20,7 @@ class AdminSteps(BaseSteps):
         self.created_obj.append(response)
         return response
 
+
     def delete_user(self, user_id: int):
         CrudRequester(
             RequestSpecs.auth_headers(username="admin", password="123456"),

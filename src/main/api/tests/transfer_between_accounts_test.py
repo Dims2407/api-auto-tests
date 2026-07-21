@@ -1,3 +1,5 @@
+from random import uniform
+
 import pytest
 
 from src.main.api.models.account_transfer_request import TransferBetweenAccountsRequest
@@ -13,66 +15,35 @@ from src.main.api.specs.response_specs import ResponseSpecs
 
 @pytest.mark.api
 class TestTransferBetweenAccount:
-    def test_valid_transfer_between_account(self):
-        create_user_request = CreateUserRequest(
-            username="Max1111",
-            password="Pas!sw0rd",
-            role="ROLE_USER")
+    def test_valid_transfer_between_account(self, api_manager, create_user_request):
+        amount = round(uniform(1000, 9000), 2)
 
-        CreateUserRequester(
-            request_spec=RequestSpecs.auth_headers(
-                username="admin",
-                password="123456"),
-            response_spec=ResponseSpecs.request_ok()
-        ).post(create_user_request)
-
-        response = CreateAccountRequester(
-            request_spec=RequestSpecs.auth_headers(
-                username="Max1111",
-                password="Pas!sw0rd"),
-            response_spec=ResponseSpecs.request_created()
-        ).post()
-
+        response = api_manager.user_steps.create_account(create_user_request)
         assert response.balance == 0
         first_account_id = response.id
 
-        deposit_account_request = DepositAccountRequest(
-            accountId=first_account_id,
-            amount=6666.6)
+        deposit_account_request = DepositAccountRequest(accountId=first_account_id, amount=amount)
 
-        response = DepositAccountRequester(
-            request_spec=RequestSpecs.auth_headers(
-                username="Max1111",
-                password="Pas!sw0rd"),
-            response_spec=ResponseSpecs.request_ok()
-        ).post(deposit_account_request)
+        response = api_manager.user_steps.deposit_account(create_user_request, deposit_account_request)
+        assert response.balance == amount
 
-        assert response.balance == 6666.6
-
-        response = CreateAccountRequester(
-            request_spec=RequestSpecs.auth_headers(
-                username="Max1111",
-                password="Pas!sw0rd"),
-            response_spec=ResponseSpecs.request_created()
-        ).post()
-
+        response = api_manager.user_steps.create_account(create_user_request)
         assert response.balance == 0
         second_account_id = response.id
 
+        transfer_amount = round(uniform(500, 1000), 2)
         transfer_between_accounts_request = TransferBetweenAccountsRequest(
             fromAccountId=first_account_id,
             toAccountId=second_account_id,
-            amount=5000.6)
-        transfer_response = TransferBetweenAccountsRequester(
-            request_spec=RequestSpecs.auth_headers(
-                username="Max1111",
-                password="Pas!sw0rd"),
-            response_spec=ResponseSpecs.request_ok()
-        ).post(transfer_between_accounts_request)
+            amount=transfer_amount)
+
+
+        transfer_response = api_manager.user_steps.valid_transfer_between_accounts(create_user_request, transfer_between_accounts_request)
+
 
         assert transfer_response.fromAccountId == first_account_id
         assert transfer_response.toAccountId == second_account_id
-        assert transfer_response.fromAccountIdBalance == 1666
+        assert transfer_response.fromAccountIdBalance == amount - transfer_amount
 
     def test_invalid_transfer_between_account(self):
         create_user_request = CreateUserRequest(

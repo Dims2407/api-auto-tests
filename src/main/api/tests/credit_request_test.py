@@ -1,4 +1,3 @@
-import requests
 import pytest
 
 from src.main.api.models.create_user_request import CreateUserRequest

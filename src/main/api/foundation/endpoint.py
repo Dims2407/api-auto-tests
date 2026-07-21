@@ -1,6 +1,9 @@
 from dataclasses import dataclass
 from enum import Enum
 from typing import Optional, Type
+
+from src.main.api.models.account_transfer_request import TransferBetweenAccountsRequest
+from src.main.api.models.account_transfer_response import TransferBetweenAccountsResponse
 from src.main.api.models.base_model import BaseModel
 from src.main.api.models.create_account_response import CreateAccountResponse
 from src.main.api.models.create_user_request import CreateUserRequest
@@ -49,3 +52,8 @@ class Endpoint(Enum):
         response_model=DepositAccountResponse
     )
 
+    TRANSFER_BETWEEN_ACCOUNTS = EndpointConfiguration(
+        request_model=TransferBetweenAccountsRequest,
+        url="/account/transfer",
+        response_model=TransferBetweenAccountsResponse
+    )
