@@ -1,5 +1,4 @@
 import pytest
-
 from src.main.api.fixtures.api_fixture import api_manager
 
 
