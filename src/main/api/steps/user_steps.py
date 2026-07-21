@@ -2,7 +2,9 @@ from src.main.api.foundation.endpoint import Endpoint
 from src.main.api.foundation.requesters.crud_requester import CrudRequester
 from src.main.api.foundation.requesters.validate_crud_requester import ValidateCrudRequester
 from src.main.api.models.account_transfer_request import TransferBetweenAccountsRequest
+from src.main.api.models.create_credit_user_request import CreateCreditUserRequest
 from src.main.api.models.create_user_request import CreateUserRequest
+from src.main.api.models.credit_request import CreditRequest
 from src.main.api.models.deposit_account_request import DepositAccountRequest
 from src.main.api.specs.request_specs import RequestSpecs
 from src.main.api.specs.response_specs import ResponseSpecs
@@ -42,5 +44,19 @@ class UserSteps(BaseSteps):
         ).post(transfer_between_accounts_request)
         return response
 
+    def create_credit_account(self, create_credit_user_request: CreateCreditUserRequest):
+        response = ValidateCrudRequester(
+            RequestSpecs.auth_headers(username=create_credit_user_request.username, password=create_credit_user_request.password),
+            Endpoint.CREATE_ACCOUNT,
+            ResponseSpecs.request_created()
+        ).post()
+        return response
 
+    def valid_credit_request(self, create_credit_user_request: CreateCreditUserRequest, credit_request: CreditRequest):
+        response = ValidateCrudRequester(
+            RequestSpecs.auth_headers(username=create_credit_user_request.username, password=create_credit_user_request.password),
+            Endpoint.CREDIT_REQUEST,
+            ResponseSpecs.request_created()
+        ).post(credit_request)
+        return response
 

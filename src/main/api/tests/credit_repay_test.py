@@ -39,18 +39,7 @@ class TestCreditRequest:
         assert response.balance == 0
         account_id = response.id
 
-        deposit_account_request = DepositAccountRequest(
-            accountId=account_id,
-            amount=6500.5)
 
-        response = DepositAccountRequester(
-            request_spec=RequestSpecs.auth_headers(
-                username="Max55",
-                password="Pas!sw0rd"),
-            response_spec=ResponseSpecs.request_ok()
-        ).post(deposit_account_request)
-        assert response.balance == 6500.5
-        account_id = response.id
 
         credit_request = CreditRequest(
             accountId=account_id,
