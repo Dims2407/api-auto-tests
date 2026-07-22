@@ -22,10 +22,15 @@ class ResponseSpecs:
         return confirm
 
     @staticmethod
+    def request_forbidden():
+        def confirm(response: Response):
+            assert response.status_code == HTTPStatus.FORBIDDEN, response.text
+            return confirm
+
+    @staticmethod
     def request_not_found():
         def confirm(response: Response):
             assert response.status_code == HTTPStatus.NOT_FOUND, response.text
-
         return confirm
 
     @staticmethod

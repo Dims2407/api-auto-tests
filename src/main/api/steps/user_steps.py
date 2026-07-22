@@ -4,6 +4,7 @@ from src.main.api.foundation.requesters.validate_crud_requester import ValidateC
 from src.main.api.models.account_transfer_request import TransferBetweenAccountsRequest
 from src.main.api.models.create_credit_user_request import CreateCreditUserRequest
 from src.main.api.models.create_user_request import CreateUserRequest
+from src.main.api.models.credit_repay_request import CreditRepayRequest
 from src.main.api.models.credit_request import CreditRequest
 from src.main.api.models.deposit_account_request import DepositAccountRequest
 from src.main.api.specs.request_specs import RequestSpecs
@@ -44,6 +45,14 @@ class UserSteps(BaseSteps):
         ).post(transfer_between_accounts_request)
         return response
 
+    def invalid_transfer_between_accounts(self, create_user_request: CreateUserRequest, transfer_between_accounts_request: TransferBetweenAccountsRequest):
+        CrudRequester(
+            RequestSpecs.auth_headers(username=create_user_request.username, password=create_user_request.password),
+            Endpoint.TRANSFER_BETWEEN_ACCOUNTS,
+            ResponseSpecs.request_unprocessable()
+        ).post(transfer_between_accounts_request)
+
+
     def create_credit_account(self, create_credit_user_request: CreateCreditUserRequest):
         response = ValidateCrudRequester(
             RequestSpecs.auth_headers(username=create_credit_user_request.username, password=create_credit_user_request.password),
@@ -59,4 +68,30 @@ class UserSteps(BaseSteps):
             ResponseSpecs.request_created()
         ).post(credit_request)
         return response
+
+    def invalid_credit_request(self, create_credit_user_request: CreateCreditUserRequest, credit_request: CreditRequest):
+        CrudRequester(
+            RequestSpecs.auth_headers(username=create_credit_user_request.username, password=create_credit_user_request.password),
+            Endpoint.CREDIT_REQUEST,
+            ResponseSpecs.request_not_found()
+        ).post(credit_request)
+
+    def valid_credit_repay_request(self, create_credit_user_request: CreateCreditUserRequest, credit_repay_request: CreditRepayRequest):
+        response = ValidateCrudRequester(
+            RequestSpecs.auth_headers(username=create_credit_user_request.username,
+                                      password=create_credit_user_request.password),
+            Endpoint.CREDIT_REPAY,
+            ResponseSpecs.request_ok()
+        ).post(credit_repay_request)
+        return response
+
+    def invalid_credit_repay_request(self, create_credit_user_request: CreateCreditUserRequest, credit_repay_request: CreditRepayRequest):
+        CrudRequester(
+            RequestSpecs.auth_headers(username=create_credit_user_request.username,
+                                      password=create_credit_user_request.password),
+            Endpoint.CREDIT_REPAY,
+            ResponseSpecs.request_unprocessable()
+        ).post(credit_repay_request)
+
+
 

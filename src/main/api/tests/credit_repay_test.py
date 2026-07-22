@@ -1,139 +1,51 @@
-import requests
+from random import uniform
 import pytest
-
-from src.main.api.models.create_user_request import CreateUserRequest
 from src.main.api.models.credit_request import CreditRequest
-from src.main.api.models.deposit_account_request import DepositAccountRequest
-from src.main.api.models.repay_credit_request import RepayCreditRequest
-from src.main.api.requests.create_account_requester import CreateAccountRequester
-from src.main.api.requests.create_user_requester import CreateUserRequester
-from src.main.api.requests.credit_repay_requester import RepayCreditRequester
-from src.main.api.requests.credit_requester import CreditRequester
-from src.main.api.requests.deposit_account_requester import DepositAccountRequester
-from src.main.api.specs.request_specs import RequestSpecs
-from src.main.api.specs.response_specs import ResponseSpecs
-
+from src.main.api.models.credit_repay_request import CreditRepayRequest
 
 @pytest.mark.api
-class TestCreditRequest:
-    def test_valid_credit_request(self):
-        create_user_request = CreateUserRequest(
-            username="Max55",
-            password="Pas!sw0rd",
-            role="ROLE_CREDIT_SECRET")
+class TestCreditRepay:
+    def test_valid_credit_repay(self, api_manager, create_credit_user_request):
+        amount = round(uniform(5000, 15000), 2)
 
-        CreateUserRequester(
-            request_spec=RequestSpecs.auth_headers(
-                username="admin",
-                password="123456"),
-            response_spec=ResponseSpecs.request_ok()
-        ).post(create_user_request)
-
-        response = CreateAccountRequester(
-            request_spec=RequestSpecs.auth_headers(
-                username="Max55",
-                password="Pas!sw0rd"),
-            response_spec=ResponseSpecs.request_created()
-        ).post()
-
-        assert response.balance == 0
-        account_id = response.id
-
-
-
-        credit_request = CreditRequest(
-            accountId=account_id,
-            amount=5000,
-            termMonths=12)
-
-        response = CreditRequester(
-            request_spec=RequestSpecs.auth_headers(
-                username="Max55",
-                password="Pas!sw0rd"),
-            response_spec=ResponseSpecs.request_created()
-        ).post(credit_request)
-        assert response.amount == 5000
-        assert response.balance == 11500.5
-        assert response.termMonths == 12
-        credit_id = response.creditId
-
-        credit_repay_request = RepayCreditRequest(
-            creditId=credit_id,
-            accountId=account_id,
-            amount=5000
-        )
-
-        credit_repay = RepayCreditRequester(
-            request_spec=RequestSpecs.auth_headers(
-                username="Max55",
-                password="Pas!sw0rd"),
-            response_spec=ResponseSpecs.request_ok()
-        ).post(credit_repay_request)
-        assert credit_repay.amountDeposited == 5000
-        assert credit_repay.creditId == credit_id
-
-    def test_invalid_credit_request(self):
-        create_user_request = CreateUserRequest(
-            username="Max555",
-            password="Pas!sw0rd",
-            role="ROLE_CREDIT_SECRET")
-
-        CreateUserRequester(
-            request_spec=RequestSpecs.auth_headers(
-                username="admin",
-                password="123456"),
-            response_spec=ResponseSpecs.request_ok()
-        ).post(create_user_request)
-
-        response = CreateAccountRequester(
-            request_spec=RequestSpecs.auth_headers(
-                username="Max555",
-                password="Pas!sw0rd"),
-            response_spec=ResponseSpecs.request_created()
-        ).post()
-
-        assert response.balance == 0
-        account_id = response.id
-
-        deposit_account_request = DepositAccountRequest(
-            accountId=account_id,
-            amount=6500.5)
-
-        response = DepositAccountRequester(
-            request_spec=RequestSpecs.auth_headers(
-                username="Max555",
-                password="Pas!sw0rd"),
-            response_spec=ResponseSpecs.request_ok()
-        ).post(deposit_account_request)
-        assert response.balance == 6500.5
+        response = api_manager.user_steps.create_account(create_credit_user_request)
         account_id = response.id
 
         credit_request = CreditRequest(
             accountId=account_id,
-            amount=5000,
+            amount=amount,
             termMonths=12)
-
-        response = CreditRequester(
-            request_spec=RequestSpecs.auth_headers(
-                username="Max555",
-                password="Pas!sw0rd"),
-            response_spec=ResponseSpecs.request_created()
-        ).post(credit_request)
-        assert response.amount == 5000
-        assert response.balance == 11500.5
-        assert response.termMonths == 12
+        response = api_manager.user_steps.valid_credit_request(create_credit_user_request, credit_request)
         credit_id = response.creditId
 
-        credit_repay_request = RepayCreditRequest(
+        credit_repay_request = CreditRepayRequest(
             creditId=credit_id,
             accountId=account_id,
-            amount=6000
+            amount=amount
         )
+        response = api_manager.user_steps.valid_credit_repay_request(create_credit_user_request, credit_repay_request)
 
-        RepayCreditRequester(
-            request_spec=RequestSpecs.auth_headers(
-                username="Max555",
-                password="Pas!sw0rd"),
-            response_spec=ResponseSpecs.request_unprocessable()
-        ).post(credit_repay_request)
+        assert response.creditId == credit_id
+        assert response.amountDeposited == amount
 
+    def test_invalid_credit_repay(self, api_manager, create_credit_user_request):
+        """Погасить на сумму превышающую остаток по кредиту"""
+        amount = round(uniform(5000, 15000), 2)
+
+        response = api_manager.user_steps.create_account(create_credit_user_request)
+        account_id = response.id
+
+        credit_request = CreditRequest(
+            accountId=account_id,
+            amount=amount,
+            termMonths=12)
+        response = api_manager.user_steps.valid_credit_request(create_credit_user_request, credit_request)
+        credit_id = response.creditId
+
+        over_amount = round(uniform(15000, 20000), 2)
+        credit_repay_request = CreditRepayRequest(
+            creditId=credit_id,
+            accountId=account_id,
+            amount=over_amount
+        )
+        api_manager.user_steps.invalid_credit_repay_request(create_credit_user_request, credit_repay_request)
