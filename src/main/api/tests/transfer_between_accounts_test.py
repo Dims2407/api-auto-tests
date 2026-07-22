@@ -53,7 +53,7 @@ class TestTransferBetweenAccount:
         response = api_manager.user_steps.create_account(create_user_request)
         second_account_id = response.id
 
-        transfer_amount = round(uniform(10001, 1500), 2)
+        transfer_amount = round(uniform(10001, 15000), 2)
         transfer_between_accounts_request = TransferBetweenAccountsRequest(
             fromAccountId=first_account_id,
             toAccountId=second_account_id,
