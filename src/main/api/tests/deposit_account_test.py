@@ -3,6 +3,7 @@ from requests import Session
 from src.main.api.db.crud.transaction_crud import TransactionCrud as Transaction
 from src.main.api.models.deposit_account_request import DepositAccountRequest
 from random import uniform
+from src.main.api.db.crud.account_crud import AccountCrudDb as Account
 
 @pytest.mark.api
 class TestDepositAccount:
@@ -17,9 +18,13 @@ class TestDepositAccount:
         response = api_manager.user_steps.deposit_account(create_user_request, deposit_account_request)
         assert response.balance == amount
 
-        get_deposit_from_db = Transaction.get_balance(db_session, deposit_account_request.amount)
-        assert response.balance == get_deposit_from_db.amount, "Зачисления не произошло"
-        assert get_deposit_from_db.transaction_type == "deposit"
+        deposit_from_db = Transaction.get_amount(db_session, deposit_account_request.amount)
+        assert response.balance == deposit_from_db.amount, "Зачисления не произошло"
+        assert deposit_from_db.transaction_type == "deposit"
+
+        account_from_db = Account.get_account_by_id(db_session, account_id)
+        assert account_from_db.balance == amount
+
 
 
 
@@ -40,5 +45,5 @@ class TestDepositAccount:
         deposit_account_request = DepositAccountRequest(accountId=account_id, amount=amount)
         api_manager.user_steps.invalid_deposit_account(create_user_request, deposit_account_request)
 
-        get_deposit_from_db = Transaction.get_balance(db_session, deposit_account_request.amount)
+        get_deposit_from_db = Transaction.get_amount(db_session, deposit_account_request.amount)
         assert get_deposit_from_db is None, "Произошло ошибочное пополнение"

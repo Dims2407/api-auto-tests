@@ -49,7 +49,7 @@ class UserSteps(BaseSteps):
         CrudRequester(
             RequestSpecs.auth_headers(username=create_user_request.username, password=create_user_request.password),
             Endpoint.TRANSFER_BETWEEN_ACCOUNTS,
-            ResponseSpecs.request_unprocessable()
+            ResponseSpecs.request_bad()
         ).post(transfer_between_accounts_request)
 
 
