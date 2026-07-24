@@ -1,13 +1,16 @@
 import pytest
 from requests import Session
-from src.main.api.db.crud.transaction_crud import TransactionCrud as Transaction
+
+from src.main.api.classes.api_manager import ApiManager
+from src.main.api.db.crud.transaction_crud import TransactionCrudDb as Transaction
+from src.main.api.models.create_user_request import CreateUserRequest
 from src.main.api.models.deposit_account_request import DepositAccountRequest
 from random import uniform
 from src.main.api.db.crud.account_crud import AccountCrudDb as Account
 
 @pytest.mark.api
 class TestDepositAccount:
-    def test_deposit_account(self, db_session: Session,api_manager, create_user_request):
+    def test_deposit_account(self, db_session: Session, api_manager: ApiManager, create_user_request: CreateUserRequest):
         amount = round(uniform(1000, 9000), 2)
 
         response = api_manager.user_steps.create_account(create_user_request)

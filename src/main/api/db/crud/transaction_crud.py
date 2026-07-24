@@ -2,7 +2,7 @@ from sqlalchemy.orm import Session
 from src.main.api.db.models.transaction_table import Transaction
 
 
-class TransactionCrud:
+class TransactionCrudDb:
     """Наличие записи в БД о зачислении средств"""
 
     @staticmethod

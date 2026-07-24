@@ -1,9 +1,11 @@
 import pytest
+
+from src.main.api.classes.api_manager import ApiManager
 from src.main.api.models.login_user_request import LoginUserRequest
 
 @pytest.mark.api
 class TestUserLogin:
-    def test_login_admin(self, api_manager):
+    def test_login_admin(self, api_manager: ApiManager):
         login_user_request = LoginUserRequest(username="admin", password="123456")
 
         response = api_manager.admin_steps.login_user(login_user_request)
