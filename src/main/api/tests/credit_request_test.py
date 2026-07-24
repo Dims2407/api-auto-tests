@@ -17,7 +17,7 @@ class TestCreditRequest:
         amount = round(uniform(5000, 15000), 2)
 
 
-        response = api_manager.user_steps.create_account(create_credit_user_request)
+        response = api_manager.user_steps.create_credit_account(create_credit_user_request)
 
         assert response.balance == 0
         account_id = response.id
@@ -44,7 +44,7 @@ class TestCreditRequest:
         """Взять кредит на второй счет при наличии кредита на первом"""
         amount = round(uniform(5000, 15000), 2)
 
-        response = api_manager.user_steps.create_account(create_credit_user_request)
+        response = api_manager.user_steps.create_credit_account(create_credit_user_request)
 
         assert response.balance == 0
         account_id = response.id
@@ -67,7 +67,7 @@ class TestCreditRequest:
         assert account_from_db.balance == response.balance
 
 
-        response = api_manager.user_steps.create_account(create_credit_user_request)
+        response = api_manager.user_steps.create_credit_account(create_credit_user_request)
         second_account_id = response.id
 
         credit_request = CreditRequest(
